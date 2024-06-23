@@ -1,16 +1,29 @@
 let original_data = {}, newData={};
 
+const reset= (row)=>{
+    row.find('.editable').attr('contenteditable',false);
+    row.find('.edit-btn').text('Edit');
+    row.find('.editable').each((index,val)=>{
+        $(val).html(original_data[$(val).attr('col_id')]);
+    });
+}
+
 function editRow(row,id){
     const _data = newData.product_name !== id ? {data: newData,id, new_name:newData.product_name}: {data: newData,id};
+
     $.ajax({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
         data: _data,
         url : "/api/products/update",
         type: 'PUT',
         dataType: 'json',
         success : function(data){
             original_data = data[0];
-            row.find('.total_value').text(data[0].product_price*data[0].product_quantity);
+            row.find('.total-value').text(data[0].product_price*data[0].product_quantity);
             if(data[0].product_name !== id) row.attr('row_id', data[0].product_name);
+            reset(row);
         }
     });
 }
@@ -25,7 +38,12 @@ const getData = (row)=>{
 }
 const onSaveClick=(row,id)=>{
     newData = getData(row);
-    editRow(row,id);
+    if(original_data['product_name']!==newData['product_name']
+    || original_data['product_price']!==newData['product_price']
+    || original_data['product_quantity']!==newData['product_quantity'])
+    {
+        editRow(row,id);
+    }
 }
 
 const renderTable = data=>{
@@ -33,6 +51,9 @@ const renderTable = data=>{
 }
 $(document).ready(()=>{
     $.ajax({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
         url : "/api/products",
         dataType: 'json',
         success : renderTable
@@ -49,6 +70,9 @@ $(document).ready(()=>{
             product_quantity
         };
         $.ajax({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
             data: {data},
             url : "/api/products/add",
             type: 'POST',
@@ -70,32 +94,20 @@ $(document).ready(()=>{
         e.preventDefault();
         const row = $(this).closest('tr');
         const id = row.attr('row_id');
-        const reset= ()=>{
-            row.find('.editable').attr('contenteditable',false);
-            $(this).text('Edit');
-            row.find('.editable').each((index,val)=>{
-                $(val).html(original_data[$(val).attr('col_id')]);
-            });
-        }
         if($(this).html() == 'Update'){
-            if((original_data['product_name']!==newData['product_name'])
-                || (original_data['product_price']!==newData['product_price'])
-                || (original_data['product_quantity']!==newData['product_quantity']))
-            {
-                onSaveClick(row,id);
-            }
-            reset();
+            $(this).text('Edit');
+            onSaveClick(row,id);
             return;
         }
+        original_data = getData(row);
         $(this).text('Update');
 
         row.find('.editable').attr('contenteditable',true);
        
-        original_data = getData(row);
 
         $(row).on('focusout',function(element){
             setTimeout(()=>{
-                if($(document.activeElement).is('td.editable')) return;
+                if($(document.activeElement).is('td.editable') || $(e.target).html() == 'Update') return;
                 reset();
             },1)
         });

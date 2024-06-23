@@ -9,11 +9,14 @@
 
 var original_data = {},
   newData = {};
-function editRow(row, id) {
-  console.log({
-    "data": newData,
-    id: id
+var reset = function reset(row) {
+  row.find('.editable').attr('contenteditable', false);
+  row.find('.edit-btn').text('Edit');
+  row.find('.editable').each(function (index, val) {
+    $(val).html(original_data[$(val).attr('col_id')]);
   });
+};
+function editRow(row, id) {
   var _data = newData.product_name !== id ? {
     data: newData,
     id: id,
@@ -23,18 +26,18 @@ function editRow(row, id) {
     id: id
   };
   $.ajax({
-    // headers: {
-    //     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-    // },
+    headers: {
+      'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    },
     data: _data,
     url: "/api/products/update",
     type: 'PUT',
     dataType: 'json',
     success: function success(data) {
-      console.log('results:', data);
       original_data = data[0];
-      row.find('.total_value').text(data[0].product_price * data[0].product_quantity);
+      row.find('.total-value').text(data[0].product_price * data[0].product_quantity);
       if (data[0].product_name !== id) row.attr('row_id', data[0].product_name);
+      reset(row);
     }
   });
 }
@@ -48,17 +51,18 @@ var getData = function getData(row) {
 };
 var onSaveClick = function onSaveClick(row, id) {
   newData = getData(row);
-  editRow(row, id);
+  if (original_data['product_name'] !== newData['product_name'] || original_data['product_price'] !== newData['product_price'] || original_data['product_quantity'] !== newData['product_quantity']) {
+    editRow(row, id);
+  }
 };
 var renderTable = function renderTable(data) {
   $('#products-container').html(data.table_view);
-  console.log(data);
 };
 $(document).ready(function () {
   $.ajax({
-    // headers: {
-    //     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-    // },
+    headers: {
+      'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    },
     url: "/api/products",
     dataType: 'json',
     success: renderTable
@@ -73,11 +77,10 @@ $(document).ready(function () {
       product_price: product_price,
       product_quantity: product_quantity
     };
-    console.log(data);
     $.ajax({
-      // headers: {
-      //     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-      // },
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+      },
       data: {
         data: data
       },
@@ -94,39 +97,27 @@ $(document).ready(function () {
         var productTotalVal = $('<td></td>').text(data[0].product_price * data[0].product_quantity).addClass('total-value');
         row.append(editBtn, productName, productQuantity, productPrice, productCreated, productTotalVal);
         $('#products-container tbody tr').last().after(row);
-        console.log(data);
       }
     });
   });
   $(document).on('click', ".edit-btn", function (e) {
-    var _this = this;
     e.preventDefault();
     var row = $(this).closest('tr');
     var id = row.attr('row_id');
-    var reset = function reset() {
-      row.find('.editable').attr('contenteditable', false);
-      $(_this).text('Edit');
-      row.find('.editable').each(function (index, val) {
-        $(val).html(original_data[$(val).attr('col_id')]);
-      });
-    };
     if ($(this).html() == 'Update') {
-      if (original_data['product_name'] !== newData['product_name'] || original_data['product_price'] !== newData['product_price'] || original_data['product_quantity'] !== newData['product_quantity']) {
-        onSaveClick(row, id);
-      }
-      reset();
+      $(this).text('Edit');
+      onSaveClick(row, id);
       return;
     }
+    original_data = getData(row);
     $(this).text('Update');
     row.find('.editable').attr('contenteditable', true);
-    original_data = getData(row);
     $(row).on('focusout', function (element) {
       setTimeout(function () {
-        if ($(document.activeElement).is('td.editable')) return;
+        if ($(document.activeElement).is('td.editable') || $(e.target).html() == 'Update') return;
         reset();
       }, 1);
     });
-    console.log("original data:", original_data);
   });
 });
 
