@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Models;
+
+use Jenssegers\Model\Model;
+use App\Utils\InventoryConnector;
+
+class Product extends Model
+{
+    //use HasFactory;
+
+    //Attributes: product_id, product_name, product_quantity, product_price, created_at, updated_at
+    protected static $unguarded = true;
+    private $update_id;
+
+    protected $fillable = [
+        "product_name" => "string",
+        "product_quantity" => "integer",
+        "product_price" => "integer",
+        "created_at" => "string",
+        "updated_at" => "string",
+    ];
+
+    public function save(){
+        //implement save functionality
+        $this->attributes += ['created_at'=>date('Y'), "updated_at"=> null];
+        return InventoryConnector::getInstance()->save($this->attributes);
+    }
+
+    public function all(){
+        return InventoryConnector::getInstance()->getData();
+    }
+
+    public function update(){
+        $this->attributes += [
+            'created_at'=>$this->all()->whereStrict('product_name', $this->update_id)->values()->get('created_at'), 
+            "updated_at"=> date('Y')];
+        return InventoryConnector::getInstance()->update($this->update_id, $this->attributes);
+    }
+
+    public function setID($id){
+        $this->update_id = $id;
+    }
+
+}
