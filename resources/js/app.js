@@ -1,18 +1,13 @@
 let original_data = {}, newData={};
 
 function editRow(row,id){
-    console.log({"data": newData,id});
     const _data = newData.product_name !== id ? {data: newData,id, new_name:newData.product_name}: {data: newData,id};
     $.ajax({
-        // headers: {
-        //     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        // },
         data: _data,
         url : "/api/products/update",
         type: 'PUT',
         dataType: 'json',
         success : function(data){
-            console.log('results:',data);
             original_data = data[0];
             row.find('.total_value').text(data[0].product_price*data[0].product_quantity);
             if(data[0].product_name !== id) row.attr('row_id', data[0].product_name);
@@ -35,13 +30,9 @@ const onSaveClick=(row,id)=>{
 
 const renderTable = data=>{
     $('#products-container').html(data.table_view);
-    console.log(data)
 }
 $(document).ready(()=>{
     $.ajax({
-        // headers: {
-        //     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        // },
         url : "/api/products",
         dataType: 'json',
         success : renderTable
@@ -57,11 +48,7 @@ $(document).ready(()=>{
             product_price,
             product_quantity
         };
-        console.log(data);
         $.ajax({
-            // headers: {
-            //     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            // },
             data: {data},
             url : "/api/products/add",
             type: 'POST',
@@ -76,7 +63,6 @@ $(document).ready(()=>{
                 const productTotalVal = $('<td></td>').text(data[0].product_price*data[0].product_quantity).addClass('total-value');
                 row.append(editBtn,productName,productQuantity,productPrice,productCreated,productTotalVal);
                 $('#products-container tbody tr').last().after(row);
-                console.log(data)
             }
         });
     });
@@ -113,7 +99,6 @@ $(document).ready(()=>{
                 reset();
             },1)
         });
-        console.log("original data:", original_data);
     });
 });
     
