@@ -2,41 +2,42 @@
 
 namespace App\Utils;
 
-use Database\Factories\ProductFactory;
-
 class InventoryConnector{
 
-    private $collection;
-    private $factory;
+    protected $path = '../database/inventory.json';
 
-    private static $myInstance;
-
-    public static function getInstance(){
-        if (null === static::$myInstance) {
-            static::$myInstance = new static();
-            static::$myInstance->factory = new ProductFactory();
-            static::$myInstance->collection = collect(static::$myInstance->factory->definition());
+    public function definition(){
+        if(file_exists($this->path)){
+            $file = fopen($this->path, 'r') or die("Unable to open file!");
+            $data = fread($file,filesize($this->path));
+            fclose($file);
+            $decoded_data = json_decode($data,true);
+            return $decoded_data["inventory"];
+        }else{
+            return $this->create();
         }
-        
-        return static::$myInstance;
     }
 
-    public function getData(){
-        return static::$myInstance->collection->unique('product_name');
+    private function create($data = null){
+        //Write data to Inventory.json
+        $_data = $data ? $data : array();
+        $inventory = array(
+            "inventory"=>$_data,
+        );
+        $inventory_json = json_encode($inventory);
+        try {
+            $fp = fopen($this->path, 'w') or die("Unable to open file!");
+            fwrite($fp, $inventory_json);
+            fclose($fp);
+            return $inventory["inventory"];
+        } catch (\Throwable $th) {
+            //throw $th;
+            return 'An Error/Exception occured.';
+        }
     }
 
-    public function save($data){
-        static::$myInstance->collection->push($data);
-        static::$myInstance->factory->save(static::$myInstance->collection->toArray());
-        return static::$myInstance->collection->whereStrict('product_name', $data["product_name"])->values();
-        // return static::$myInstance->collection;
+    public function save(array $data){
+        return $this->create($data);
     }
 
-    public function update($id, $newData){
-        //find product item from inventory and update it
-        $replaced = InventoryConnector::getData()->keyBy('product_name')->replace([$id=>$newData]);
-        static::$myInstance->factory->save($replaced->values()->toArray());
-        static::$myInstance->collection = $replaced;
-        return static::$myInstance->collection->whereStrict('product_name', $newData["product_name"])->values();
-    }
 }

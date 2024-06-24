@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Jenssegers\Model\Model;
-use App\Utils\InventoryConnector;
+use Database\Factories\ProductFactory;
 
 class Product extends Model
 {
@@ -24,18 +24,18 @@ class Product extends Model
     public function save(){
         //implement save functionality
         $this->attributes += ['created_at'=>date('Y-m-d H:i:s'), "updated_at"=> null];
-        return InventoryConnector::getInstance()->save($this->attributes);
+        return ProductFactory::getInstance()->save($this->attributes);
     }
 
     public function all(){
-        return InventoryConnector::getInstance()->getData();
+        return ProductFactory::getInstance()->getData();
     }
 
     public function update(){
         $this->attributes += [
             'created_at'=>$this->all()->whereStrict('product_name', $this->update_id)->values()[0]['created_at'], 
             "updated_at"=> date('Y-m-d H:i:s')];
-        return InventoryConnector::getInstance()->update($this->update_id, $this->attributes);
+        return ProductFactory::getInstance()->update($this->update_id, $this->attributes);
     }
 
     public function setID($id){

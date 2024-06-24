@@ -3,7 +3,7 @@
 namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
-use App\Utils\InventoryConnector;
+use Database\Factories\ProductFactory;
 
 class IsUnique implements Rule
 {
@@ -26,7 +26,7 @@ class IsUnique implements Rule
      */
     public function passes($attribute, $value){
         $key = $this->attribute ? $this->attribute : $attribute;
-        return !InventoryConnector::getInstance()->getData()->contains($key, $value);
+        return !ProductFactory::getInstance()->getData()->contains($key, $value);
     }
 
     /**
