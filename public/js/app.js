@@ -93,7 +93,7 @@ $(document).ready(function () {
         var productName = $('<td></td>').text(data[0].product_name).addClass('editable').attr('col_id', 'product_name');
         var productQuantity = $('<td></td>').text(data[0].product_quantity).addClass('editable').attr('col_id', 'product_quantity');
         var productPrice = $('<td></td>').text(data[0].product_price).addClass('editable').attr('col_id', 'product_price');
-        var productCreated = $('<td></td>').text(data[0].product_created);
+        var productCreated = $('<td></td>').text(data[0].product_created_at);
         var productTotalVal = $('<td></td>').text(data[0].product_price * data[0].product_quantity).addClass('total-value');
         row.append(editBtn, productName, productQuantity, productPrice, productCreated, productTotalVal);
         $('#products-container tbody').append(row);
