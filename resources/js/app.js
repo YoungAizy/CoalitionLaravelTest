@@ -83,10 +83,10 @@ $(document).ready(()=>{
                 const productName = $('<td></td>').text(data[0].product_name).addClass('editable').attr('col_id','product_name');
                 const productQuantity = $('<td></td>').text(data[0].product_quantity).addClass('editable').attr('col_id','product_quantity');
                 const productPrice = $('<td></td>').text(data[0].product_price).addClass('editable').attr('col_id','product_price');
-                const productCreated = $('<td></td>').text(data[0].product_created);
+                const productCreated = $('<td></td>').text(data[0].product_created_at);
                 const productTotalVal = $('<td></td>').text(data[0].product_price*data[0].product_quantity).addClass('total-value');
                 row.append(editBtn,productName,productQuantity,productPrice,productCreated,productTotalVal);
-                $('#products-container tbody tr').last().after(row);
+                $('#products-container tbody').append(row);
             }
         });
     });

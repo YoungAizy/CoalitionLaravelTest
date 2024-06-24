@@ -96,7 +96,7 @@ $(document).ready(function () {
         var productCreated = $('<td></td>').text(data[0].product_created);
         var productTotalVal = $('<td></td>').text(data[0].product_price * data[0].product_quantity).addClass('total-value');
         row.append(editBtn, productName, productQuantity, productPrice, productCreated, productTotalVal);
-        $('#products-container tbody tr').last().after(row);
+        $('#products-container tbody').append(row);
       }
     });
   });
