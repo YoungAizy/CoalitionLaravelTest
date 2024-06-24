@@ -23,7 +23,7 @@ class Product extends Model
 
     public function save(){
         //implement save functionality
-        $this->attributes += ['created_at'=>date('Y'), "updated_at"=> null];
+        $this->attributes += ['created_at'=>date('Y-m-d H:i:s'), "updated_at"=> null];
         return InventoryConnector::getInstance()->save($this->attributes);
     }
 
@@ -33,8 +33,8 @@ class Product extends Model
 
     public function update(){
         $this->attributes += [
-            'created_at'=>$this->all()->whereStrict('product_name', $this->update_id)->values()->get('created_at'), 
-            "updated_at"=> date('Y')];
+            'created_at'=>$this->all()->whereStrict('product_name', $this->update_id)->values()[0]['created_at'], 
+            "updated_at"=> date('Y-m-d H:i:s')];
         return InventoryConnector::getInstance()->update($this->update_id, $this->attributes);
     }
 
